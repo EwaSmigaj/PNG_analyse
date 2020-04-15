@@ -1,6 +1,8 @@
 import sys
+import fourier as ft
 from functools import reduce
 from chunk import Chunk, IHDR, IDAT
+
 
 
 def str_to_class(str):
@@ -31,6 +33,10 @@ b"sPLT", b"tIME", b"iTXt", b"tEXt", b"zTXt"]
         self.init_chunks()
         # print("PO INIT")
         # print(self.chunks)
+
+        #display img etc
+        ft_plots = ft.Fourier(path)
+        ft_plots.display()
 
     def find_chunks(self):  # fills self.found_chunks_location with chunks name and start position
         i = len(self.signature)
@@ -85,7 +91,7 @@ b"sPLT", b"tIME", b"iTXt", b"tEXt", b"zTXt"]
                                                   self.chunks["IHDR"].height,
                                                   self.chunks["IHDR"].color_type)
                     self.chunks["IHDR"].print_info()
-                    self.chunks["IDAT"].display()
+                    #self.chunks["IDAT"].display()
                 else:
                     self.chunks[chunk_type] = cls(self.chunks[chunk_type])
                     # self.chunks[chunk_type].print_info()
