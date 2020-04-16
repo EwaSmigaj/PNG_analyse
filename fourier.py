@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 from matplotlib import pyplot
 
+
 class Fourier:
     def __init__(self, file_path):
         self.img = ~cv2.imread(file_path,0)
@@ -16,16 +17,16 @@ class Fourier:
         ftd_phase = np.asarray(ftd_phase,dtype=np.uint8)                          #phase of(FT_data) -> uint8_y
 
         #plotting
-        pyplot.subplot(141),pyplot.imshow(self.img_color)
+        pyplot.subplot(141), pyplot.imshow(self.img_color)
         pyplot.title('Image (color)'), pyplot.xticks([]), pyplot.yticks([])
 
-        pyplot.subplot(142),pyplot.imshow(self.img, cmap = 'Greys')
+        pyplot.subplot(142), pyplot.imshow(self.img, cmap = 'Greys')
         pyplot.title('Image (grayscale)'), pyplot.xticks([]), pyplot.yticks([])
 
-        pyplot.subplot(143),pyplot.imshow(ftd_logscl, cmap = 'Greys')
+        pyplot.subplot(143), pyplot.imshow(ftd_logscl, cmap = 'Greys')
         pyplot.title('Spectrum (FT log scale)'), pyplot.xticks([]), pyplot.yticks([])
 
-        pyplot.subplot(144),pyplot.imshow(ftd_phase, cmap = 'Greys')
+        pyplot.subplot(144), pyplot.imshow(ftd_phase, cmap = 'Greys')
         pyplot.title('Phase plot'), pyplot.xticks([]), pyplot.yticks([])
 
         pyplot.show()

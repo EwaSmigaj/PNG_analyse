@@ -2,11 +2,12 @@ import zlib
 import matplotlib.pyplot as matplot
 import numpy
 
+
 CHUNKS = {b"IHDR", b"IDAT", b"IEND"}
 
 
 class Chunk:
-    def __init__(self, bytes):
+    def __init__(self, bytes, is_critical=0):
         self.bytes = bytes
         # print(f"CHUNK BYTES = {self.bytes.hex()}")
         self.length = int.from_bytes(self.bytes[0:4], "big")  # length always contains 4bytes
@@ -15,12 +16,12 @@ class Chunk:
         self.data = self.bytes[8:8+self.length]   # data always contains {self.length} bytes
         # print(f"CHUNK DATA {self.data.hex()}")
         self.crc = self.bytes[8+self.length:self.length+12]            # crc always contains 4 bytes
+        self.is_critical = is_critical
 
     def print_info(self):
         print(f"type: {self.type}")
         print(f"length: {self.length}")
         print(f"crc (hex): {self.crc.hex()}")
-
 
 
 def filter_method(t):
@@ -33,15 +34,17 @@ def filter_method(t):
     }
     return types.get(t)
 
+
 def interlace_method(i):
     if i == 0:
         return "No interlace"
     else:
         return "Adam7 inerlace"
 
+
 class IHDR(Chunk):
     def __init__(self, bytes):
-        super().__init__(bytes)
+        super().__init__(bytes, 1)
         self.width = int.from_bytes(self.data[0:4], byteorder='big')
         # print("KONSTRUKTOR IHRT WIDTH")
         # print(int.from_bytes(self.data[0:4], byteorder='big'))
@@ -79,10 +82,9 @@ def bpp(color_type):
     return byte_per_pixel.get(color_type)
 
 
-
 class IDAT(Chunk):
     def __init__(self, bytes, width, height, color_type):
-        super().__init__(bytes)
+        super().__init__(bytes, 1)
         self.width = width
         self.height = height
         self.color_type = color_type
@@ -146,6 +148,42 @@ class IDAT(Chunk):
         matplot.show()
 
 
+    '''
+    Traslate values from 0-255 to 0-1
+    for pyplot
+    '''
+    def rgb_interp(rgb_tuple):
+        r = interp(rgb_tuple[0], 0, 255, 0, 1)
+        g = interp(rgb_tuple[1], 0, 255, 0, 1)
+        b = interp(rgb_tuple[2], 0, 255, 0, 1)
+        return (r, g, b)
+
+    class PLTE(Chunk):
+        def __init__(self, bytes, color_type=3):
+            super().__init__(bytes, 1)
+            self.entries = self.length // 3
+            self.required = True if color_type == 3 else False
+            self.palettes = [(self.data[i], self.data[i + 1], self.data[i + 2]) for i in range(0, self.length, 3)]
+
+        def display(self):
+            width = 1
+            fig, ax = matplot.subplots(1, 1)
+            ax.set_xlim(0 + width / 2, self.entries + width / 2)
+            ax.set_ylim(0, 1)
+            for i in range(self.entries):
+                ax.bar(i + width, 1, width=1, color=rgb_interp(self.palettes[i]))
+            ax.set_xticks([i + 1 for i in range(self.entries)])
+            ax.set_yticks([])
+            fig.tight_layout()
+            fig.canvas.set_window_title('PLTE Palettes')
+            matplot.draw()
+            matplot.pause(0.001)
+
+        def print_info(self):
+            super.print_info()
+            print(f"entries: {self.entries}")
+            print(f"required: {self.required}")
+            print()
 
 
 
